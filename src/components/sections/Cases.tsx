@@ -11,11 +11,10 @@ const caseImages = [CASE_LA_OSMA, CASE_DARUL_SALOM, CASE_B2GAME, CASE_OSQ];
 
 export function Cases() {
   return (
-    <section id="cases" className="bg-paper py-24 md:py-32">
+    <section id="cases" className="bg-[#F4F0EA] py-20 md:py-28">
       <div className="max-w-8xl mx-auto px-4 md:px-8">
         <Reveal>
-          <div className="rubric text-red mb-6">{cases.rubric}</div>
-          <h2 className="font-display text-ink text-4xl md:text-5xl lg:text-6xl mb-12">
+          <h2 className="font-display text-ink text-4xl md:text-5xl lg:text-6xl tracking-tight mb-12 uppercase">
             {cases.title}
           </h2>
         </Reveal>
@@ -24,41 +23,73 @@ export function Cases() {
           {cases.items.map((c, i) => (
             <Reveal key={i} delay={0.1 * (i % 2)}>
               <article
-                className="bg-white border border-paper-line h-full flex flex-col transition-all hover:-translate-y-1"
-                style={{ borderRadius: '3px' }}
+                className="bg-[#F4F0EA] border border-[#A81919] h-full flex flex-col justify-between transition-all hover:shadow-md overflow-hidden"
+                style={{ borderRadius: '0px' }}
               >
-                <div className="relative overflow-hidden">
+                {/* Photo on top of card */}
+                <div className="relative overflow-hidden border-b border-[#A81919]/40">
                   <img
                     src={caseImages[i]}
                     alt={`${c.name} — ${c.niche}`}
-                    className="w-full h-56 object-cover"
+                    className="w-full h-56 md:h-64 object-cover"
                     loading="lazy"
                   />
                 </div>
-                <div className="p-6 md:p-8 flex flex-col gap-5 flex-grow">
+
+                <div className="p-6 md:p-8 flex flex-col justify-between flex-grow">
                   <div>
-                    <h3 className="font-display text-ink text-2xl mb-1">{c.name}</h3>
-                    <span className="text-ink/50 text-sm">{c.niche}</span>
+                    {/* Case Header in Oswald font */}
+                    <h3
+                      className="text-ink text-3xl md:text-[36px] font-bold tracking-tight uppercase mb-1"
+                      style={{ fontFamily: "'Oswald', sans-serif" }}
+                    >
+                      {c.name}
+                    </h3>
+                    <div className="text-[#A81919] text-xs font-bold uppercase tracking-[0.16em] mb-6">
+                      {c.niche}
+                    </div>
+
+                    {/* Task & Actions */}
+                    <div className="space-y-5">
+                      <div>
+                        <div className="text-[#8C857B] text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5">
+                          ЗАДАЧА
+                        </div>
+                        <p className="text-neutral-900 text-sm md:text-base leading-snug font-normal">
+                          {c.task}
+                        </p>
+                      </div>
+
+                      <div>
+                        <div className="text-[#8C857B] text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5">
+                          ДЕЙСТВИЯ
+                        </div>
+                        <p className="text-neutral-900 text-sm md:text-base leading-snug font-normal">
+                          {c.actions}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-4 flex-grow">
-                    <div>
-                      <div className="rubric text-ink/40 mb-1">Задача</div>
-                      <p className="text-ink/75 text-sm leading-relaxed">{c.task}</p>
-                    </div>
-                    <div>
-                      <div className="rubric text-ink/40 mb-1">Действия</div>
-                      <p className="text-ink/75 text-sm leading-relaxed">{c.actions}</p>
-                    </div>
-                    <div>
-                      <div className="rubric text-ink/40 mb-1">Результат</div>
-                      <p className="text-ink/75 text-sm leading-relaxed">{c.result}</p>
-                    </div>
-                  </div>
+                  {/* Result Section */}
+                  <div className="mt-6">
+                    <hr className="border-t border-[#DCD5C9] mb-5" />
 
-                  <div className="pt-4 border-t border-paper-line">
-                    <div className="font-display text-red text-3xl md:text-4xl">
-                      {c.resultHighlight}
+                    <div>
+                      <div className="text-[#8C857B] text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5">
+                        РЕЗУЛЬТАТ
+                      </div>
+                      <div
+                        className="text-[#A81919] text-3xl sm:text-4xl md:text-[40px] font-bold tracking-tight mb-2 flex items-center gap-2.5 flex-wrap"
+                        style={{ fontFamily: "'Oswald', sans-serif" }}
+                      >
+                        <span>{c.resultStart}</span>
+                        <span className="text-[#A81919] font-sans font-bold text-2xl md:text-3xl leading-none">→</span>
+                        <span>{c.resultEnd}</span>
+                      </div>
+                      <p className="text-neutral-800 text-xs md:text-sm leading-snug">
+                        {c.resultDesc}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -70,3 +101,7 @@ export function Cases() {
     </section>
   );
 }
+
+
+
+

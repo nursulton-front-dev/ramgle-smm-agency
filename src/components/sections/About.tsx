@@ -28,7 +28,7 @@ export function About() {
                   <img
                     src={FOUNDER_PHOTO}
                     alt="Рахманов Эльбек — основатель Ramble Agency"
-                    className="w-full sm:w-40 h-64 sm:h-56 object-cover grayscale"
+                    className="w-full sm:w-44 h-64 sm:h-56 object-cover"
                     style={{ borderRadius: '2px' }}
                     loading="lazy"
                   />

@@ -1,18 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --red: #B31519;
-  --red-deep: #7C0E11;
-  --red-bright: #D8242A;
-  --ink: #160F0F;
+  --red: #b31519;
+  --red-deep: #7c0e11;
+  --red-bright: #d8242a;
+  --ink: #160f0f;
   --ink-2: #221818;
-  --paper: #F2EFE9;
-  --paper-line: #D8D2C7;
-  --on-red: #F3D7D8;
+  --paper: #f2efe9;
+  --paper-line: #d8d2c7;
+  --on-red: #f3d7d8;
+
+  --radius: 2px;
+  --header-h: 76px;
+
+  --background: var(--ink);
+  --foreground: var(--paper);
+  --font-display: 'Oswald', 'Archivo', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 @layer base {
@@ -24,24 +32,31 @@
 
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 72px;
   }
 
   body {
-    font-family: 'Inter', sans-serif;
-    font-size: 18px;
-    line-height: 1.6;
     background-color: var(--ink);
-    color: rgba(242, 239, 233, 0.85);
+    color: var(--paper);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4 {
-    font-family: 'Anton', sans-serif;
+  section[id],
+  div[id] {
+    scroll-margin-top: var(--header-h);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
     text-transform: uppercase;
-    line-height: 1.05;
+    font-weight: 700;
+    line-height: 0.95;
     letter-spacing: -0.01em;
   }
 
@@ -51,24 +66,104 @@
   }
 }
 
-@layer components {
+@layer utilities {
   .font-display {
-    font-family: 'Anton', sans-serif;
+    font-family: var(--font-display);
   }
 
-  .font-condensed {
-    font-family: 'Oswald', sans-serif;
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .h1-display {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 768px) {
+    .h1-display {
+      font-size: 64px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .h1-display {
+      font-size: 78px;
+    }
+  }
+
+  .h2-display {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 768px) {
+    .h2-display {
+      font-size: 48px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .h2-display {
+      font-size: 56px;
+    }
+  }
+
+  .h3-display {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 768px) {
+    .h3-display {
+      font-size: 26px;
+    }
   }
 
   .rubric {
+    font-family: var(--font-sans);
     font-size: 12px;
+    line-height: 1.4;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    font-weight: 600;
   }
 
-  .tabular-nums {
+  .stat-num {
+    font-family: var(--font-display);
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
+    font-size: 44px;
+    line-height: 1;
+  }
+  @media (min-width: 768px) {
+    .stat-num {
+      font-size: 60px;
+    }
+  }
+
+  .lede {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 40px;
+    }
   }
 
   .grain-overlay {
@@ -86,12 +181,16 @@
   .marquee-track {
     display: flex;
     width: max-content;
-    animation: marquee 30s linear infinite;
+    animation: ramble-marquee 32s linear infinite;
   }
 
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+  @keyframes ramble-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 }
 
@@ -103,3 +202,4 @@
     scroll-behavior: auto;
   }
 }
+

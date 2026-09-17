@@ -1,11 +1,12 @@
 // Central media registry — replace these URLs with your own photos in one place.
 // Pexels URLs are used as cinematic placeholders.
 
+import elbekImg from './elbek.jpg';
+
 export const HERO_BG =
   'https://images.pexels.com/photos/23384400/pexels-photo-23384400.jpeg?auto=compress&cs=tinysrgb&w=1920';
 
-export const FOUNDER_PHOTO =
-  'https://images.pexels.com/photos/33290985/pexels-photo-33290985.jpeg?auto=compress&cs=tinysrgb&w=800';
+export const FOUNDER_PHOTO = elbekImg;
 
 export const AI_VISUAL =
   'https://images.pexels.com/photos/13812458/pexels-photo-13812458.jpeg?auto=compress&cs=tinysrgb&w=1200';
