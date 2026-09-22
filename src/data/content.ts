@@ -16,7 +16,7 @@ export const header = {
 };
 
 export const hero = {
-  badge: '4 года на рынке • Digital & SMM Agency',
+  badge: '4 года на рынке • Content Production • SMM',
   title:
     'Превращаем контент в чистую прибыль. От системного SMM до AI-продакшна',
   subtitle:
