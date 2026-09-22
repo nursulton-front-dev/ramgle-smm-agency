@@ -18,7 +18,8 @@ export function Contact({ selectedPlan }: ContactProps) {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [errors, setErrors] = useState<{ name?: string; phone?: string; services?: string }>({});
+  const [websiteHp, setWebsiteHp] = useState('');
+  const [errors, setErrors] = useState<{ name?: string; phone?: string; services?: string; server?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<SubmittedPayload | null>(null);
@@ -79,6 +80,7 @@ export function Contact({ selectedPlan }: ContactProps) {
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setErrors((prev) => ({ ...prev, server: undefined }));
 
     const payload: SubmittedPayload = {
       name: name.trim(),
@@ -91,19 +93,32 @@ export function Contact({ selectedPlan }: ContactProps) {
       const res = await fetch('/api/send-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          ...payload,
+          website_hp: websiteHp,
+        }),
       });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          setErrors((prev) => ({
+            ...prev,
+            server: errorData.error || 'Слишком много попыток. Подождите пару минут.',
+          }));
+          return;
+        }
         console.warn('Telegram API Response Warning:', errorData);
       }
-    } catch (err) {
-      console.error('Network or server function error:', err);
-    } finally {
-      setIsSubmitting(false);
+
       setSubmittedData(payload);
       setSubmitted(true);
+    } catch (err) {
+      console.error('Network or server function error:', err);
+      setSubmittedData(payload);
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -194,6 +209,23 @@ export function Contact({ selectedPlan }: ContactProps) {
               noValidate
             >
               <input type="hidden" name="plan" value={selectedPlan} />
+              {/* Honeypot Anti-Spam Trap Field */}
+              <input
+                type="text"
+                name="website_hp"
+                value={websiteHp}
+                onChange={(e) => setWebsiteHp(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden opacity-0 pointer-events-none absolute -z-50 h-0 w-0 overflow-hidden"
+                aria-hidden="true"
+              />
+
+              {errors.server && (
+                <div className="text-sm text-red-bright bg-red-bright/10 border border-red-bright/30 p-3 rounded text-center font-medium">
+                  {errors.server}
+                </div>
+              )}
 
               {selectedPlan && (
                 <div className="text-sm text-white/60 bg-red-bright/10 border border-red-bright/30 px-3.5 py-2 rounded flex items-center gap-2">

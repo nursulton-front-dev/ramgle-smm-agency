@@ -1,5 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Simple in-memory rate limiter for serverless instance (IP -> timestamps)
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 3 * 60 * 1000; // 3 minutes
+const MAX_REQUESTS_PER_WINDOW = 3;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(ip) || [];
+  const validTimestamps = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+
+  if (validTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
+    return true;
+  }
+
+  validTimestamps.push(now);
+  rateLimitMap.set(ip, validTimestamps);
+  return false;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,10 +38,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { name, phone, services, plan } = req.body || {};
+    const body = req.body || {};
+    const { name, phone, services, plan, website_hp } = body;
 
-    if (!name || !phone) {
+    // 1. HONEYPOT ANTI-SPAM TRAP
+    // If hidden honeypot field is filled by a bot, pretend success without sending message
+    if (website_hp && String(website_hp).trim().length > 0) {
+      console.warn('Bot detected via honeypot trap:', { ip: req.headers['x-forwarded-for'], body });
+      return res.status(200).json({ success: true });
+    }
+
+    // 2. IP RATE LIMITING
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      'unknown';
+
+    if (isRateLimited(clientIp)) {
+      console.warn(`Rate limit exceeded for IP ${clientIp}`);
+      return res.status(429).json({
+        error: 'Слишком много запросов. Пожалуйста, подождите пару минут перед повторной отправкой.',
+      });
+    }
+
+    // 3. INPUT VALIDATION
+    if (!name || typeof name !== 'string' || !phone || typeof phone !== 'string') {
       return res.status(400).json({ error: 'Имя и телефон обязательны' });
+    }
+
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 70) {
+      return res.status(400).json({ error: 'Пожалуйста, введите корректное имя (от 2 до 70 символов).' });
+    }
+
+    // Reject URLs in name field (common spam pattern)
+    if (/https?:\/\/|www\.|\.com|\.ru|\.uz|\.net/i.test(trimmedName)) {
+      console.warn('Spam link detected in name:', trimmedName);
+      return res.status(200).json({ success: true }); // Silent drop for spam bots
+    }
+
+    // Check phone digits count (must be 9 local digits for Uzbekistan)
+    const phoneDigits = phone.replace(/\D/g, '').replace(/^998/, '');
+    if (phoneDigits.length !== 9) {
+      return res.status(400).json({ error: 'Некорректный номер телефона.' });
     }
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -52,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const planText = plan ? `<b>${escapeHtml(plan)}</b>` : '<i>Не выбран</i>';
 
     const message = `🔥 <b>НОВАЯ ЗАЯВКА С САЙТА RAMBLE SMM</b>\n\n👤 <b>Имя:</b> ${escapeHtml(
-      name
+      trimmedName
     )}\n📞 <b>Телефон:</b> <code>${escapeHtml(
       phone
     )}</code>\n💎 <b>Тариф:</b> ${planText}\n\n📋 <b>Услуги:</b>\n${servicesText}`;
