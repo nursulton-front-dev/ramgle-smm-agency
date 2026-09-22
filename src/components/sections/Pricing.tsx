@@ -89,6 +89,14 @@ export function Pricing({ onSelectPlan }: PricingProps) {
             </Reveal>
           ))}
         </div>
+
+        {pricing.note && (
+          <Reveal delay={0.3}>
+            <p className="text-center text-on-red text-sm md:text-base mt-10 font-medium opacity-90">
+              {pricing.note}
+            </p>
+          </Reveal>
+        )}
       </div>
     </section>
   );
