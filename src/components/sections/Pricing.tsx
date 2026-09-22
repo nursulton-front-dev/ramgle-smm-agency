@@ -13,11 +13,11 @@ export function Pricing({ onSelectPlan }: PricingProps) {
   };
 
   return (
-    <section id="pricing" className="bg-red py-24 md:py-32">
+    <section id="pricing" className="bg-ink py-24 md:py-32">
       <div className="max-w-8xl mx-auto px-4 md:px-8">
         <Reveal>
-          <div className="rubric text-on-red mb-6">{pricing.rubric}</div>
-          <h2 className="font-display text-white text-4xl md:text-5xl lg:text-6xl mb-12">
+          <div className="rubric text-red-bright mb-6">{pricing.rubric}</div>
+          <h2 className="font-display text-paper text-4xl md:text-5xl lg:text-6xl mb-12">
             {pricing.title}
           </h2>
         </Reveal>
@@ -28,8 +28,8 @@ export function Pricing({ onSelectPlan }: PricingProps) {
               <div
                 className={`relative h-full p-6 md:p-8 flex flex-col border transition-all ${
                   plan.featured
-                    ? 'bg-ink border-red-bright md:-mt-4 md:mb-4'
-                    : 'bg-red border-red-deep hover:border-red-bright'
+                    ? 'bg-ink-2 border-2 border-red-bright md:-mt-4 md:mb-4 shadow-xl shadow-red-bright/10'
+                    : 'bg-ink-2/60 border border-white/15 hover:border-red-bright/60'
                 }`}
                 style={{ borderRadius: '3px' }}
               >
@@ -38,11 +38,7 @@ export function Pricing({ onSelectPlan }: PricingProps) {
                     {plan.badge}
                   </div>
                 )}
-                <h3
-                  className={`font-display text-2xl md:text-3xl mb-4 ${
-                    plan.featured ? 'text-white' : 'text-white'
-                  }`}
-                >
+                <h3 className="font-display text-2xl md:text-3xl mb-4 text-white">
                   {plan.name}
                 </h3>
                 <div
@@ -57,15 +53,9 @@ export function Pricing({ onSelectPlan }: PricingProps) {
                     <li key={j} className="flex items-start gap-3">
                       <Check
                         size={16}
-                        className={`mt-1 shrink-0 ${
-                          plan.featured ? 'text-red-bright' : 'text-on-red'
-                        }`}
+                        className="mt-1 shrink-0 text-red-bright"
                       />
-                      <span
-                        className={`text-sm leading-relaxed ${
-                          plan.featured ? 'text-paper/80' : 'text-on-red'
-                        }`}
-                      >
+                      <span className="text-sm leading-relaxed text-paper/80">
                         {f}
                       </span>
                     </li>
@@ -78,8 +68,8 @@ export function Pricing({ onSelectPlan }: PricingProps) {
                   }}
                   className={`w-full py-4 font-semibold text-sm transition-colors ${
                     plan.featured
-                      ? 'bg-white text-ink hover:bg-on-red'
-                      : 'bg-transparent border border-white/40 text-white hover:bg-white/10'
+                      ? 'bg-red-bright text-white hover:bg-red-deep'
+                      : 'bg-transparent border border-white/30 text-white hover:border-red-bright hover:bg-red-bright/10'
                   }`}
                   style={{ borderRadius: '2px' }}
                 >
@@ -92,7 +82,7 @@ export function Pricing({ onSelectPlan }: PricingProps) {
 
         {pricing.note && (
           <Reveal delay={0.3}>
-            <p className="text-center text-on-red text-sm md:text-base mt-10 font-medium opacity-90">
+            <p className="text-center text-white/50 text-sm md:text-base mt-10 font-medium">
               {pricing.note}
             </p>
           </Reveal>
