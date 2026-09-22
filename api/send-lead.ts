@@ -26,13 +26,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+    const rawChatIds = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_CHAT_IDS;
 
-    if (!botToken || !chatId) {
+    if (!botToken || !rawChatIds) {
       console.error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is missing');
       return res.status(500).json({
         error: 'TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID missing in Vercel Environment Variables',
       });
+    }
+
+    const chatIds = rawChatIds
+      .split(/[,;\s]+/)
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+
+    if (chatIds.length === 0) {
+      return res.status(500).json({ error: 'No valid Chat IDs provided' });
     }
 
     const servicesText =
@@ -49,21 +58,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     )}</code>\n💎 <b>Тариф:</b> ${planText}\n\n📋 <b>Услуги:</b>\n${servicesText}`;
 
     const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    const response = await fetch(telegramUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'HTML',
-      }),
-    });
 
-    const data = await response.json();
+    const results = await Promise.all(
+      chatIds.map(async (chatId) => {
+        try {
+          const resp = await fetch(telegramUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: message,
+              parse_mode: 'HTML',
+            }),
+          });
+          const data = await resp.json();
+          return { chatId, ok: resp.ok && data.ok, data };
+        } catch (err: any) {
+          return { chatId, ok: false, error: err.message };
+        }
+      })
+    );
 
-    if (!response.ok || !data.ok) {
-      console.error('Telegram API error:', data);
-      return res.status(500).json({ error: 'Telegram API Error', details: data });
+    const hasSuccess = results.some((r) => r.ok);
+    if (!hasSuccess) {
+      console.error('Failed to send to Telegram Chat IDs:', results);
+      return res.status(500).json({ error: 'Telegram API Error', details: results });
     }
 
     return res.status(200).json({ success: true });
