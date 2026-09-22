@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { Check, Plus } from 'lucide-react';
+import { useState, type FormEvent, type ChangeEvent } from 'react';
+import { Check, Plus, Loader2 } from 'lucide-react';
 import { contact } from '@/data/content';
 import { Reveal } from '@/components/ui/Reveal';
 
@@ -19,6 +19,7 @@ export function Contact({ selectedPlan }: ContactProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<{ name?: string; phone?: string; services?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<SubmittedPayload | null>(null);
 
@@ -33,17 +34,34 @@ export function Contact({ selectedPlan }: ContactProps) {
     }
   };
 
-  const formatPhone = (raw: string): string => {
-    const digits = raw.replace(/\D/g, '');
-    let d = digits;
-    if (d.startsWith('998')) d = d.slice(3);
-    d = d.slice(0, 9);
-    let out = '+998 ';
-    if (d.length > 0) out += d.slice(0, 2);
-    if (d.length >= 2) out += ' ' + d.slice(2, 5);
-    if (d.length >= 5) out += ' ' + d.slice(5, 7);
-    if (d.length >= 7) out += ' ' + d.slice(7, 9);
-    return out;
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    let digits = inputValue.replace(/\D/g, '');
+
+    if (digits.startsWith('998')) {
+      digits = digits.slice(3);
+    }
+    digits = digits.slice(0, 9);
+
+    const prevDigits = phone.replace(/\D/g, '').replace(/^998/, '');
+    if (inputValue.length < phone.length && digits.length === prevDigits.length && digits.length > 0) {
+      digits = digits.slice(0, -1);
+    }
+
+    if (digits.length === 0) {
+      setPhone('');
+      if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+      return;
+    }
+
+    let formatted = '+998 ';
+    if (digits.length > 0) formatted += digits.slice(0, 2);
+    if (digits.length > 2) formatted += ' ' + digits.slice(2, 5);
+    if (digits.length > 5) formatted += ' ' + digits.slice(5, 7);
+    if (digits.length > 7) formatted += ' ' + digits.slice(7, 9);
+
+    setPhone(formatted);
+    if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
   };
 
   const validate = (): boolean => {
@@ -56,9 +74,11 @@ export function Contact({ selectedPlan }: ContactProps) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
+    setIsSubmitting(true);
 
     const payload: SubmittedPayload = {
       name: name.trim(),
@@ -67,9 +87,24 @@ export function Contact({ selectedPlan }: ContactProps) {
       plan: selectedPlan || undefined,
     };
 
-    console.log('Sending form submission data:', payload);
-    setSubmittedData(payload);
-    setSubmitted(true);
+    try {
+      const res = await fetch('/api/send-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.warn('Telegram API Response Warning:', errorData);
+      }
+    } catch (err) {
+      console.error('Network or server function error:', err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittedData(payload);
+      setSubmitted(true);
+    }
   };
 
   const inputClass = (field: keyof typeof errors) =>
@@ -226,7 +261,10 @@ export function Contact({ selectedPlan }: ContactProps) {
                     type="text"
                     placeholder={contact.fields.name}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                    }}
                     className={inputClass('name')}
                     style={{ borderRadius: '2px' }}
                     aria-label="Имя"
@@ -241,7 +279,7 @@ export function Contact({ selectedPlan }: ContactProps) {
                     type="tel"
                     placeholder={contact.fields.phone}
                     value={phone}
-                    onChange={(e) => setPhone(formatPhone(e.target.value))}
+                    onChange={handlePhoneChange}
                     className={inputClass('phone')}
                     style={{ borderRadius: '2px' }}
                     aria-label="Номер телефона"
@@ -254,10 +292,18 @@ export function Contact({ selectedPlan }: ContactProps) {
 
               <button
                 type="submit"
-                className="w-full bg-white text-ink py-4 font-semibold text-base md:text-lg hover:bg-on-red transition-all duration-200 mt-2 active:scale-[0.99]"
+                disabled={isSubmitting}
+                className="w-full bg-white text-ink py-4 font-semibold text-base md:text-lg hover:bg-on-red transition-all duration-200 mt-2 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{ borderRadius: '2px' }}
               >
-                {contact.cta}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    <span>Отправка заявки...</span>
+                  </>
+                ) : (
+                  contact.cta
+                )}
               </button>
             </form>
           </Reveal>
