@@ -1,10 +1,11 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Check, Plus, Loader2 } from 'lucide-react';
+import { Check, Plus, Loader2, X } from 'lucide-react';
 import { contact } from '@/data/content';
 import { Reveal } from '@/components/ui/Reveal';
 
 interface ContactProps {
   selectedPlan: string;
+  onClearPlan?: () => void;
 }
 
 interface SubmittedPayload {
@@ -14,7 +15,7 @@ interface SubmittedPayload {
   plan?: string;
 }
 
-export function Contact({ selectedPlan }: ContactProps) {
+export function Contact({ selectedPlan, onClearPlan }: ContactProps) {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -70,7 +71,9 @@ export function Contact({ selectedPlan }: ContactProps) {
     if (!name.trim()) e.name = contact.errors.name;
     const digits = phone.replace(/\D/g, '').replace(/^998/, '');
     if (digits.length !== 9) e.phone = contact.errors.phone;
-    if (selectedServices.length === 0) e.services = contact.errors.services;
+    if (!selectedPlan && selectedServices.length === 0) {
+      e.services = 'Выберите хотя бы одну услугу или тариф';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -228,9 +231,22 @@ export function Contact({ selectedPlan }: ContactProps) {
               )}
 
               {selectedPlan && (
-                <div className="text-sm text-white/60 bg-red-bright/10 border border-red-bright/30 px-3.5 py-2 rounded flex items-center gap-2">
-                  <span>Выбранный тариф из раздела цен:</span>
-                  <span className="text-red-bright font-semibold">{selectedPlan}</span>
+                <div className="text-sm text-white/90 bg-red-bright/15 border border-red-bright/40 px-3.5 py-2.5 rounded flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/60">Выбранный тариф:</span>
+                    <span className="text-red-bright font-bold uppercase tracking-wider">{selectedPlan}</span>
+                  </div>
+                  {onClearPlan && (
+                    <button
+                      type="button"
+                      onClick={onClearPlan}
+                      className="text-xs text-white/60 hover:text-white transition-colors flex items-center gap-1 bg-black/40 hover:bg-black/70 px-2.5 py-1 rounded border border-white/10"
+                      title="Сбросить выбранный тариф"
+                    >
+                      <X size={13} />
+                      <span>Отменить тариф</span>
+                    </button>
+                  )}
                 </div>
               )}
 

@@ -28,7 +28,10 @@ function App() {
         <Cases />
         <Pricing onSelectPlan={setSelectedPlan} />
         <Process />
-        <Contact selectedPlan={selectedPlan} />
+        <Contact
+          selectedPlan={selectedPlan}
+          onClearPlan={() => setSelectedPlan('')}
+        />
       </main>
       <Footer />
     </>
